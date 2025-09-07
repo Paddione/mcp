@@ -1,0 +1,24 @@
+services:
+  mcp-server:
+    build: .
+    image: local/vector-mcp:latest
+    container_name: vector-mcp
+    environment:
+      - AUTO_INGEST=0
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./input:/app/input
+      - ./data:/app/data
+    restart: unless-stopped
+
+  mcp-stdio:
+    image: local/vector-mcp:latest
+    container_name: vector-mcp-stdio
+    command: ["python", "-m", "src.mcp_server"]
+    stdin_open: true     # keep STDIN open for MCP stdio
+    tty: false           # raw stdio (no TTY)
+    volumes:
+      - ./input:/app/input
+      - ./data:/app/data
+    # Not started by default; MCP clients can exec or run this service.
