@@ -54,6 +54,7 @@ tmp/
 # --- Project-specific ---
 # Generated vector store and local inputs
 data/vector_store/*
+!data/vector_store/.gitkeep
 input/html/*.html
 input/PDF/*.pdf
 # Backup exports (kept out of VCS)
@@ -67,4 +68,3 @@ assets/index_backup*.jsonl
 
 # Docker compose local overrides
 docker-compose.override.yml
-
