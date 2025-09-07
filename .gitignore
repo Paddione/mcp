@@ -53,9 +53,9 @@ tmp/
 
 # --- Project-specific ---
 # Generated vector store and local inputs
-data/
-input/
-
+data/vector_store/*
+input/html/*.html
+input/PDF/*.pdf
 # Backup exports (kept out of VCS)
 assets/index_backup*.jsonl
 
