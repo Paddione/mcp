@@ -1,10 +1,10 @@
 # Local Vector Store & MCP Server
 
-Lightweight vector store with TF‑IDF search, a small FastAPI HTTP API, and an MCP stdio server. Ingests documents from `input/html` and `input/PDF` and stores artifacts under `data/vector_store`.
+Lightweight vector store with TF‑IDF search, a small FastAPI HTTP API, and an MCP stdio server. Ingests documents from `input/html`, `input/md`, and `input/PDF` and stores artifacts under `data/vector_store`.
 
 ## Usage (Local)
 - Install: `pip install -r requirements.txt`
-- Ingest data: `make ingest` (reads `input/html` and `input/PDF`)
+- Ingest data: `make ingest` (reads `input/html`, `input/md`, and `input/PDF`)
 - Query via CLI: `make query Q="security maturity" K=5`
 - HTTP API (after deployment below):
   - Health: `curl localhost:8000/health`
@@ -32,7 +32,7 @@ Lightweight vector store with TF‑IDF search, a small FastAPI HTTP API, and an 
 - Compose service: `make mcp-stdio-up` (optional background service); `make mcp-stdio-down` to remove.
 
 ## Data Layout
-- Input: `input/html/**/*.html`, `input/PDF/**/*.pdf`
+- Input: `input/html/**/*.html`, `input/md/**/*.md`, `input/PDF/**/*.pdf`
 - Artifacts: `data/vector_store/{vectorizer.json,index.jsonl,meta.json}`
 
 Notes

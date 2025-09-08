@@ -18,7 +18,7 @@ def list_tools() -> List[types.Tool]:
     return [
         types.Tool(
             name="ingest",
-            description="Scan input/html and input/PDF, build TF-IDF vector store.",
+            description="Scan input/html, input/md, and input/PDF, build TF-IDF vector store.",
             inputSchema={"type": "object"},
         ),
         types.Tool(

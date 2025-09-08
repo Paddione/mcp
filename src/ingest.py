@@ -3,34 +3,54 @@ import json
 from glob import glob
 from typing import List, Tuple
 
-from .text_extraction import extract_text_from_html, extract_text_from_pdf
+from .text_extraction import (
+    extract_text_from_html,
+    extract_text_from_pdf,
+    extract_text_from_markdown,
+)
 from .chunking import chunk_text
 from .tfidf import TfidfVectorizer
 from .vector_store import _sparse_norm
 
 
-def find_input_files() -> Tuple[List[str], List[str]]:
+def find_input_files() -> Tuple[List[str], List[str], List[str]]:
     html_files = glob(os.path.join("input", "html", "**", "*.html"), recursive=True)
+    md_files = glob(os.path.join("input", "md", "**", "*.md"), recursive=True)
     pdf_files = []
     pdf_files += glob(os.path.join("input", "PDF", "**", "*.pdf"), recursive=True)
     pdf_files += glob(os.path.join("input", "PDF", "**", "*.PDF"), recursive=True)
-    return html_files, pdf_files
+    return html_files, md_files, pdf_files
 
 
 def ensure_dirs():
-    for p in ["input", os.path.join("input", "html"), os.path.join("input", "PDF"), os.path.join("data", "vector_store")]:
+    for p in [
+        "input",
+        os.path.join("input", "html"),
+        os.path.join("input", "md"),
+        os.path.join("input", "PDF"),
+        os.path.join("data", "vector_store"),
+    ]:
         os.makedirs(p, exist_ok=True)
 
 
 def ingest():
     ensure_dirs()
-    html_files, pdf_files = find_input_files()
+    html_files, md_files, pdf_files = find_input_files()
     docs: List[Tuple[str, str]] = []  # (path, text)
 
     # HTML
     for path in html_files:
         try:
             text = extract_text_from_html(path)
+        except Exception:
+            text = ""
+        if text.strip():
+            docs.append((path, text))
+
+    # Markdown
+    for path in md_files:
+        try:
+            text = extract_text_from_markdown(path)
         except Exception:
             text = ""
         if text.strip():
@@ -55,7 +75,7 @@ def ingest():
                 chunk_meta.append((path, i))
 
     if not chunked_texts:
-        print("[info] No text chunks found. Place files under input/html or input/PDF.")
+        print("[info] No text chunks found. Place files under input/html, input/md, or input/PDF.")
         return
 
     # Fit TF-IDF and transform
@@ -97,4 +117,3 @@ def ingest():
 
 if __name__ == "__main__":
     ingest()
-

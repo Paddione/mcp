@@ -2,6 +2,7 @@ from html.parser import HTMLParser
 from typing import Optional
 import io
 import os
+import re
 
 
 class _HTMLTextExtractor(HTMLParser):
@@ -61,3 +62,50 @@ def extract_text_from_pdf(path: str) -> str:
     except Exception:
         return ""
 
+
+def extract_text_from_markdown(path: str, encoding: Optional[str] = None) -> str:
+    """Best-effort Markdown to plain text extraction.
+
+    Keeps visible text while stripping common Markdown syntax such as code fences,
+    inline code markers, emphasis markers, and link targets. Headings are kept as text.
+    """
+    try:
+        with open(path, "r", encoding=encoding or "utf-8", errors="ignore") as f:
+            content = f.read()
+    except Exception:
+        return ""
+
+    # Remove fenced code blocks ```...``` (including info string)
+    content = re.sub(r"```[\s\S]*?```", "\n", content)
+
+    # Remove inline code markers `code`
+    content = content.replace("`", "")
+
+    # Convert links/images: [text](url) and ![alt](url) -> text/alt
+    content = re.sub(r"!\[([^\]]*)\]\([^\)]*\)", r"\1", content)  # images
+    content = re.sub(r"\[([^\]]+)\]\([^\)]*\)", r"\1", content)    # links
+
+    lines = []
+    for raw in content.splitlines():
+        line = raw.rstrip()
+        # Strip leading heading markers and blockquotes
+        line = re.sub(r"^\s{0,3}#{1,6}\s*", "", line)  # headings
+        line = re.sub(r"^\s{0,3}>\s?", "", line)       # blockquote
+
+        # Remove unordered list markers and ordered list indices
+        line = re.sub(r"^\s*[-*+]\s+", "", line)
+        line = re.sub(r"^\s*\d+\.[\)\s]+", "", line)
+
+        # Drop table rule lines (---|:---:)
+        if re.match(r"^\s*[:\-\|\s]+$", line):
+            continue
+
+        # Strip emphasis markers
+        line = line.replace("**", "").replace("__", "")
+        line = line.replace("*", "").replace("_", "")
+        line = line.replace("~~", "")
+
+        if line.strip():
+            lines.append(line.strip())
+
+    return "\n".join(lines)
